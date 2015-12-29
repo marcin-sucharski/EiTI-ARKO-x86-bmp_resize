@@ -65,9 +65,9 @@ int main(int argc, char** argv) {
 
 			case SDL_WINDOWEVENT:
 				if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-					SDL_Surface *screenSurface = SDL_GetWindowSurface(window);
+					SDL_Surface *surface = SDL_GetWindowSurface(window);
 					image_data src = {image->pixels, image->w, image->h};
-					image_data dst = {screenSurface->pixels, screenSurface->w, screenSurface->h};
+					image_data dst = {surface->pixels, surface->w, surface->h};
 					scale_image(&src, &dst);
 					SDL_UpdateWindowSurface(window);
 				}
