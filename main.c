@@ -55,6 +55,15 @@ int main(int argc, char** argv) {
 		goto cleanup;
 	}
 
+
+	SDL_PixelFormat fmt = { 0 };
+	fmt.format = SDL_PIXELFORMAT_RGBA8888;
+	fmt.BitsPerPixel = 32;
+	fmt.BytesPerPixel = 4;
+	SDL_Surface *temp = SDL_ConvertSurface(image, &fmt, 0);
+	SDL_FreeSurface(image);
+	image = temp;
+
 	SDL_SetWindowSize(window, SCREEN_WIDTH, SCREEN_HEIGHT);
 	while (isRunning) {
 		while (SDL_PollEvent(&event)) {
