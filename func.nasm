@@ -9,8 +9,8 @@ section	.text
 ; Image struct:
 ; struct {
 ;	pointer (8 bytes)
-;	width (8 bytes unsigned integer)
-;	height (8 bytes unsigned integer)
+;	width (4 bytes unsigned integer)
+;	height (4 bytes unsigned integer)
 ; }
 ;
 global scale_image
