@@ -111,11 +111,12 @@ align 16
 	; calculate coefficents #1
 	pshufd	xmm3,	xmm1,	10111011b		; xmm3 == [x2-x x-x1 x2-x x-x1] float32
 	pshufd	xmm1,	xmm1,	00000000b		; xmm1 == [x2-x1 x2-x1 x2-x1 x2-x1] float32
+	rcpps	xmm1,	xmm1			; xmm1 = 1/xmm1
 	; prepare to load colors
 	mov	r15d,	r14d			; r15 == [0 off_22]
 	shr	r14,	32			; r14 == [0 off_12]
 	; calculate coefficents #1
-	divps	xmm3,	xmm1			; xmm3 == [coef11 coef21 coef12 coef22] float32
+	mulps	xmm3,	xmm1			; xmm3 == [coef11 coef21 coef12 coef22] float32
 	; load colors and check for infinity
 	mov	r12d,	[rsi+r12*4]			; r12 == [0 Q_11]
 	mov	r14d,	[rsi+r14*4]			; r14 == [0 Q_12]
@@ -128,8 +129,9 @@ align 16
 	pshufd	xmm1,	xmm1,	11011010b		; xmm1 == [x y y1 y1] float32
 	subps	xmm4,	xmm1			; xmm4 == [0 y2-y y2-y1 y-y1] float32
 	pshufd	xmm1,	xmm4,	01010101b		; xmm1 == [y2-y1 y2-y1 y2-y1 y2-y1] float32
+	rcpps	xmm1,	xmm1			; xmm1 == 1/xmm1
 	pshufd	xmm4,	xmm4,	11111000b		; xmm4 == [0 0 y2-y y-y1] float32
-	divps	xmm4,	xmm1			; xmm4 == [0 0 coeffr1 coeffr2] float32
+	mulps	xmm4,	xmm1			; xmm4 == [0 0 coeffr1 coeffr2] float32
 	; load colors into sse
 	pxor	xmm0,	xmm0			; xmm0 == 0
 	movq	xmm1,	r12			; xmm1 == [0 0 0 RGBA] uint8
