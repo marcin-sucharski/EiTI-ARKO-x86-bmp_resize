@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O2 -Wall -Wextra
+CFLAGS=-g -Wall -Wextra
 
 ASM=nasm
 AFLAGS=-f elf64
