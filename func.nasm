@@ -168,10 +168,10 @@ align 16
 	mulps	xmm7,	xmm0			; xmm7 == R_2 float32
 	addps	xmm1,	xmm7			; xmm1 == result color float32
 	; save color
-	pxor	xmm0,	xmm0			; xmm0 == 0
+	pxor	xmm4,	xmm4			; xmm0 == 0
 	cvtps2dq	xmm1,	xmm1			; xmm1 == result color int32
-	packssdw	xmm1,	xmm0			; xmm1 == result color int16
-	packuswb	xmm1,	xmm0			; xmm1 == result color int8
+	packssdw	xmm1,	xmm4			; xmm1 == result color int16
+	packuswb	xmm1,	xmm4			; xmm1 == result color int8
 	movq	rax,	xmm1			; rax == [0 RGBA]
 	mov	[rdi+rdx*4],	eax
 	; end of x_loop
