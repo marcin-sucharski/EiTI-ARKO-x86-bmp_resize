@@ -1,21 +1,7 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-	typedef struct image_data_t {
-		void *ptr;
-		int32_t width;
-		int32_t height;
-	} image_data;
-
-	void scale_image(
-		const image_data *src,
-		image_data *dst);
-#ifdef __cplusplus
-}
-#endif
+#include "scale_image.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;

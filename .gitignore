@@ -1,4 +1,5 @@
 *.o
 *.bmp
-resize
 *.swp
+resize
+perftest
