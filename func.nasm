@@ -27,7 +27,7 @@ scale_image:
 	sub	rsp,	4
 	stmxcsr	[rsp]				; store mxcsr register
 	mov	eax,	[rsp]
-	or	rax,	0x3000			; set round to zero
+	or	rax,	1110000001000000b		; set round to zero, FZ, DAZ
 	sub	rsp,	4
 	mov	[rsp],	eax
 	ldmxcsr	[rsp]				; load mxcsr register
@@ -72,15 +72,14 @@ align 16
 .x_loop:
 	; load constant
 	movaps	xmm7,	[half_vec]			; load half_vec into xmm7
-	; calculate offset in dest image
-	mov	rdx,	rcx			; rdx == yy
-	imul	rdx,	r10			; rdx == dst_w*y
-	add	rdx,	rbx			; rdx == dst_w*y + x
-	; prepare coordinates
+	; calculate offset in dest image and prepare coordinates
 	shl	rbx,	32			; rbx == [x 0]
 	mov	rax,	rcx			; rax == [0 y]
+	mov	rdx,	rcx			; rdx == y
+	imul	rdx,	r10			; rdx == dst_w*y
 	or	rax,	rbx			; rax == [x y]
 	shr	rbx,	32			; rbx == [0 x]
+	add	rdx,	rbx			; rdx == dst_w*y + x
 	; calculate offsets
 	movq	xmm0,	rax			; xmm0 == [0 0 x y] int32
 	pshufd	xmm0,	xmm0,	01000100b		; xmm0 == [x y x y] int32
@@ -94,23 +93,28 @@ align 16
 	pshufd	xmm3,	xmm3,	01110111b		; xmm3 == [x1 x2 x1 x2] int32
 	pshufd	xmm1,	xmm1,	10100000b		; xmm1 == [y2*sw y2*sw y1*sw y1*sw] int32
 	paddd	xmm3,	xmm1			; xmm3 == [off_12 off_22 off_11 off_21] int32
-	; prepare to load colors
-	movq	r12,	xmm3			; r12 == [off_11 off_21]
-	psrldq	xmm3,	8			; xmm3 == [0 0 off_12 off_22] int32
-	mov	r13d,	r12d			; r13 == [0 off_21]
-	shr	r12,	32			; r12 == [0 off_11]
-	movq	r14,	xmm3			; r14 == [off_12 off_22]
-	mov	r15d,	r14d			; r15 == [0 off_22]
-	shr	r14,	32			; r14 == [0 off_12]
 	; calculate coefficents #1
 	pshufd	xmm1,	xmm2,	00001111b		; xmm1 == [y1 y1 x2 x2] float32
 	pshufd	xmm4,	xmm0,	01010101b		; xmm4 == [x x x x] float32
 	unpcklps	xmm1,	xmm0			; xmm1 == [x x2 y x2] float32
 	unpcklps	xmm4,	xmm2			; xmm4 == [x1 x y1 x] float32
+	; prepare to load colors
+	movq	r12,	xmm3			; r12 == [off_11 off_21]
+	psrldq	xmm3,	8			; xmm3 == [0 0 off_12 off_22] int32
+	mov	r13d,	r12d			; r13 == [0 off_21]
+	shr	r12,	32			; r12 == [0 off_11]
+	; calculate coefficents #1
 	pshufd	xmm4,	xmm4,	11100111b		; xmm4 == [x1 x y1 x1] float32
 	subps	xmm1,	xmm4			; xmm1 == [x-x1 x2-x y-y1 x2-x1] float32
+	; prepare to load colors
+	movq	r14,	xmm3			; r14 == [off_12 off_22]
+	; calculate coefficents #1
 	pshufd	xmm3,	xmm1,	10111011b		; xmm3 == [x2-x x-x1 x2-x x-x1] float32
 	pshufd	xmm1,	xmm1,	00000000b		; xmm1 == [x2-x1 x2-x1 x2-x1 x2-x1] float32
+	; prepare to load colors
+	mov	r15d,	r14d			; r15 == [0 off_22]
+	shr	r14,	32			; r14 == [0 off_12]
+	; calculate coefficents #1
 	divps	xmm3,	xmm1			; xmm3 == [coef11 coef21 coef12 coef22] float32
 	; load colors and check for infinity
 	mov	r12d,	[rsi+r12*4]			; r12 == [0 Q_11]
