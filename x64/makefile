@@ -6,8 +6,10 @@ AFLAGS=-f elf64
 
 all: resize perftest
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+main.o: ../common/main.c
+	$(CC) $(CFLAGS) -c ../common/main.c
+perftest.o: ../common/perftest.c
+	$(CC) $(CFLAGS) -c ../common/perftest.c
 func.o: func.nasm
 	$(ASM) $(AFLAGS) func.nasm
 resize: main.o func.o
