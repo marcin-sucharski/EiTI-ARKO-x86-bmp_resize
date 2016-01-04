@@ -82,10 +82,12 @@ align 16
 	add	rdx,	rbx			; rdx == dst_w*y + x
 	; calculate offsets
 	movq	xmm0,	rax			; xmm0 == [0 0 x y] int32
+	xor	rax,	rax
 	pshufd	xmm0,	xmm0,	01000100b		; xmm0 == [x y x y] int32
 	cvtdq2ps	xmm0,	xmm0			; xmm0 == [x y x y] float32
 	mulps	xmm0,	xmm5			; xmm0 == [x2 y2 x y] float32
 	addps	xmm0,	xmm7			; xmm0 == [x2+0.5 y2+0.5 x y] float32
+	pxor	xmm7,	xmm7
 	cvtps2dq	xmm1,	xmm0			; xmm1 == [x2 y2 x1 y1] int32
 	cvtdq2ps	xmm2,	xmm1			; xmm2 == [x2 y2 x1 y1] float32
 	movdqa	xmm3,	xmm1			; xmm3 == [x2 y2 x1 y1] int32
@@ -125,7 +127,9 @@ align 16
 	mov	r15d,	[rsi+r15*4]			; r15 == [0 Q_22]
 	; calculate coefficents #2
 	pshufd	xmm1,	xmm2,	00000010b		; xmm1 == [y1 y1 y1 y2] float32
+	pxor	xmm2,	xmm2
 	unpcklps	xmm1,	xmm0			; xmm1 == [x y1 y y2] float32
+	pxor	xmm0,	xmm0
 	pshufd	xmm4,	xmm1,	11000001b		; xmm4 == [x y2 y2 y] float32
 	pshufd	xmm1,	xmm1,	11011010b		; xmm1 == [x y y1 y1] float32
 	subps	xmm4,	xmm1			; xmm4 == [0 y2-y y2-y1 y-y1] float32
@@ -134,12 +138,13 @@ align 16
 	pshufd	xmm4,	xmm4,	11111000b		; xmm4 == [0 0 y2-y y-y1] float32
 	mulps	xmm4,	xmm1			; xmm4 == [0 0 coeffr1 coeffr2] float32
 	; load colors into sse
-	pxor	xmm0,	xmm0			; xmm0 == 0
 	movq	xmm1,	r12			; xmm1 == [0 0 0 RGBA] uint8
+	xor	r12,	r12
 	punpcklbw	xmm1,	xmm0			; xmm1 == [0 RG 0 BA] uint16
 	punpcklwd	xmm1,	xmm0			; xmm1 == [R G B A] uint32
 	cvtdq2ps	xmm1,	xmm1			; xmm1 == [R G B A] float32, Q_11
 	movq	xmm2,	r13			; xmm2 == [0 0 0 RGBA] uint8
+	xor	r13,	r13
 	punpcklbw	xmm2,	xmm0			; xmm2 == [0 RG 0 BA] uint16
 	punpcklwd	xmm2,	xmm0			; xmm2 == [R G B A] uint32
 	cvtdq2ps	xmm2,	xmm2			; xmm2 == [R G B A] float32, Q_21
@@ -159,21 +164,26 @@ align 16
 	pshufd	xmm0,	xmm3,	01010101b		; xmm0 == [coeff_12 coeff_12 coeff_12 coeff_12] float32
 	mulps	xmm7,	xmm0			; xmm7 == Q_12 * coeff_12 float32
 	pshufd	xmm0,	xmm3,	00000000b		; xmm0 == [coeff_22 coeff_22 coeff_22 coeff_22] float32
+	pxor	xmm3,	xmm3
 	mulps	xmm8,	xmm0			; xmm8 == Q_22 * coeff_22 float32
 	addps	xmm1,	xmm2			; xmm1 == Q_11 * coeff_11 + Q_21 * coeff_21 float32
+	pxor	xmm2,	xmm2
 	addps	xmm7,	xmm8			; xmm7 == Q_12 * coeff_12 + Q_22 * coeff_22 float32
+	pxor	xmm8,	xmm8
 	pshufd	xmm0,	xmm4,	01010101b		; xmm0 == [coeffr_1 coeffr_1 coeffr_1 coeffr_1] float32
 	mulps	xmm1,	xmm0			; xmm1 == R_1 float32
 	pshufd	xmm0,	xmm4,	00000000b		; xmm0 == [coeffr_2 ceffr_2 coeffr_2 coeffr_2] float32
+	pxor	xmm4,	xmm4
 	mulps	xmm7,	xmm0			; xmm7 == R_2 float32
 	addps	xmm1,	xmm7			; xmm1 == result color float32
+	pxor	xmm7,	xmm7
 	; save color
-	pxor	xmm4,	xmm4			; xmm0 == 0
 	cvtps2dq	xmm1,	xmm1			; xmm1 == result color int32
-	packssdw	xmm1,	xmm4			; xmm1 == result color int16
-	packuswb	xmm1,	xmm4			; xmm1 == result color int8
+	packssdw	xmm1,	xmm3			; xmm1 == result color int16
+	packuswb	xmm1,	xmm3			; xmm1 == result color int8
 	movq	rax,	xmm1			; rax == [0 RGBA]
 	mov	[rdi+rdx*4],	eax
+	xor	rax,	rax
 	; end of x_loop
 	sub	rbx,	1			; subtract inner loop index
 	jns	.x_loop				; check inner loop condition
