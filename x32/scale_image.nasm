@@ -37,7 +37,7 @@ scale_image:
 	mov	[ebp-12],	ebx			; source image pointer
 	mov	eax,	[ebp+20]			; pointer to dest struct
 	mov	edx,	[eax+4]
-	mov	[ebp-16],	ecx			; dest image width
+	mov	[ebp-16],	edx			; dest image width
 	mov	ebx,	[eax+8]
 	mov	[ebp-20],	ebx			; dest image height
 	mov	ecx,	[eax]
