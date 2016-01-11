@@ -104,7 +104,6 @@ align 16
 	movq	r12,	xmm3			; r12 == [off_11 off_21]
 	mov	r13d,	r12d			; r13 == [0 off_21]
 	shr	r12,	32			; r12 == [0 off_11]
-	prefetcht0	[rsi+r12*4]
 	psrldq	xmm3,	8			; xmm3 == [0 0 off_12 off_22] int32
 	; calculate coefficents #1
 	pshufd	xmm4,	xmm4,	11100111b		; xmm4 == [x1 x y1 x1] float32

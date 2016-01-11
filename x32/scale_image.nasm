@@ -102,10 +102,6 @@ align 16
 	mov	ebx,	[ebp-44]			; ebx == off_11
 	mov	ecx,	[ebp-40]			; ecx == off_22
 	mov	edx,	[ebp-36]			; edx == off_12
-	prefetcht0	[esi+eax*4]
-	prefetcht0	[esi+ebx*4]
-	prefetcht0	[esi+ecx*4]
-	prefetcht0	[esi+edx*4]
 	; calculate coefficents #1
 	pshufd	xmm4,	xmm4,	11100111b		; xmm4 == [x1 x y1 x1] float32
 	subps	xmm1,	xmm4			; xmm1 == [x-x1 x2-x y-y1 x2-x1] float32
